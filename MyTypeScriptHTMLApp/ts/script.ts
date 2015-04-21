@@ -1,13 +1,21 @@
 ﻿///<reference path="data.ts"/> //!!!! Added to TS
 
-var data;
-var viewedData;
-var sortBy = '';
-var sortDirection = '';
+import dataEx = DataAccess;
+import dataExI = DataAccess.Interfaces;
 
-function filter(filterStr) {
+class SortDirection {
+    static name = 'name';
+    static age = 'age';
+}
+
+var data: Array<dataExI.IPerson>;
+var viewedData: Array<dataExI.IPerson>;
+var sortBy: SortDirection;
+var sortDirection: string;
+
+function filter(filterStr: string): void {
     filterStr = filterStr.toLowerCase();
-    viewedData = data.filter(function (val) {
+    viewedData = data.filter((val: dataExI.IPerson): boolean => {
         return val.name.toLowerCase().indexOf(filterStr) === 0;
     });
     showItems(viewedData);
@@ -23,7 +31,7 @@ function appendTd(nodeTr, value) {
 function showItems(items) {
     var pList = document.getElementById('person-table').getElementsByTagName('tbody')[0];
     pList.innerHTML = '';
-    items.forEach(function (val) {
+    items.forEach((val: dataExI.IPerson): void => {
         var nodeTr = document.createElement("TR");
         appendTd(nodeTr, val.name);
         appendTd(nodeTr, val.age);
@@ -31,54 +39,38 @@ function showItems(items) {
     });
 }
 
-function sortByName(a, b) {
-    if (a.name > b.name) {
-        return sortDirection === 'asc' ? 1 : -1;
-    }
-    if (a.name < b.name) {
-        return sortDirection === 'asc' ? -1 : 1;
-    }
-    return 0;
-}
-
-function sortByAge(a, b) {
-    if (a.age > b.age) {
-        return sortDirection === 'asc' ? 1 : -1;
-    }
-    if (a.age < b.age) {
-        return sortDirection === 'asc' ? -1 : 1;
-    }
-    return 0;
-}
-
-function getSortFunction() {
-    if (sortBy === 'fullName') return sortByName;
-    if (sortBy === 'age') return sortByAge;
-}
-
-function resortBy(field) {
+function resortBy(field: string) {
     if (sortBy !== field) {
         sortBy = field;
         sortDirection = 'asc';
     } else sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
-    var func = getSortFunction();
-    if (!func) return;
-    viewedData = viewedData.sort(func);
+
+    viewedData = viewedData.sort((a: dataExI.IPerson, b: dataExI.IPerson) => {
+        if (a[field] > b[field]) {
+            return sortDirection === 'asc' ? 1 : -1;
+        }
+        if (a[field] < b[field]) {
+            return sortDirection === 'asc' ? -1 : 1;
+        }
+        return 0;
+    });
     showItems(viewedData);
 };
 
-window.onload = function () {
+window.onload = () => {
+    
+    var dataProvider = new dataEx.DataProvider();
     data = dataProvider.getPersonData();
     viewedData = data;
     showItems(data);
-    document.getElementById('filter-button').onclick = function () {
+    document.getElementById('filter-button').onclick = () => {
         var filterStr = document.getElementById('filter-input').nodeValue; //!!!! TS vcalue -> nodeValue
         filter(filterStr);
     };
-    document.getElementById('full-name-head').onclick = function () {
-        resortBy('fullName');
+    document.getElementById('full-name-head').onclick = () => {
+        resortBy(SortDirection.name);
     };
-    document.getElementById('age-head').onclick = function () {
-        resortBy('age');
+    document.getElementById('age-head').onclick = () => {
+        resortBy(SortDirection.age);
     };
 };
