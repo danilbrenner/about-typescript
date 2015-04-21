@@ -1,76 +1,101 @@
 ﻿///<reference path="data.ts"/> //!!!! Added to TS
 
-import dataEx = DataAccess;
-import dataExI = DataAccess.Interfaces;
+module MainModule {
 
-class SortDirection {
-    static name = 'name';
-    static age = 'age';
-}
+    import IPerson = DataAccess.Interfaces.IPerson;
 
-var data: Array<dataExI.IPerson>;
-var viewedData: Array<dataExI.IPerson>;
-var sortBy: SortDirection;
-var sortDirection: string;
+    export class SortBy {
+        static name = 'name';
+        static age = 'age';
+    }
 
-function filter(filterStr: string): void {
-    filterStr = filterStr.toLowerCase();
-    viewedData = data.filter((val: dataExI.IPerson): boolean => {
-        return val.name.toLowerCase().indexOf(filterStr) === 0;
-    });
-    showItems(viewedData);
-};
+    enum SortDirection {
+        Asc,
+        Desc
+    }
 
-function appendTd(nodeTr, value) {
-    var nodeTd = document.createElement("TD");
-    var textnode = document.createTextNode(value);
-    nodeTd.appendChild(textnode);
-    nodeTr.appendChild(nodeTd);
-}
+    export class MainViewModel {
+        private viewedData: IPerson[];
 
-function showItems(items) {
-    var pList = document.getElementById('person-table').getElementsByTagName('tbody')[0];
-    pList.innerHTML = '';
-    items.forEach((val: dataExI.IPerson): void => {
-        var nodeTr = document.createElement("TR");
-        appendTd(nodeTr, val.name);
-        appendTd(nodeTr, val.age);
-        pList.appendChild(nodeTr);
-    });
-}
-
-function resortBy(field: string) {
-    if (sortBy !== field) {
-        sortBy = field;
-        sortDirection = 'asc';
-    } else sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
-
-    viewedData = viewedData.sort((a: dataExI.IPerson, b: dataExI.IPerson) => {
-        if (a[field] > b[field]) {
-            return sortDirection === 'asc' ? 1 : -1;
+        get visibleItems(): IPerson[] {
+            return this.viewedData;
         }
-        if (a[field] < b[field]) {
-            return sortDirection === 'asc' ? -1 : 1;
+
+        private sortBy: string;
+        private sortDirection: SortDirection;
+
+        constructor(private data: IPerson[]) {
+            this.viewedData = this.data;
         }
-        return 0;
-    });
-    showItems(viewedData);
-};
+
+        filter(filterStr: string): void {
+            filterStr = filterStr.toLowerCase();
+            this.viewedData = this.data.filter((val: IPerson): boolean => {
+                return val.name.toLowerCase().indexOf(filterStr) === 0;
+            });
+        }
+
+        resortBy(field: string): void {
+            if (this.sortBy !== field) {
+                this.sortBy = field;
+                this.sortDirection = SortDirection.Asc;
+            } else this.sortDirection = this.sortDirection === SortDirection.Asc ? SortDirection.Desc : SortDirection.Asc;
+
+            this.viewedData = this.viewedData.sort((a: IPerson, b: IPerson) => {
+                if (a[field] > b[field]) {
+                    return this.sortDirection === SortDirection.Asc ? 1 : -1;
+                }
+                if (a[field] < b[field]) {
+                    return this.sortDirection === SortDirection.Asc ? -1 : 1;
+                }
+                return 0;
+            });
+        }
+    }
+
+    export class Binder {
+        constructor(private pList: HTMLTableSectionElement) {
+        }
+
+        private appendTd<T>(nodeTr: HTMLElement, value: T): void {
+            var nodeTd = document.createElement("TD");
+            var textnode = document.createTextNode(value.toString());
+            nodeTd.appendChild(textnode);
+            nodeTr.appendChild(nodeTd);
+        }
+
+        showItems(items: IPerson[]): void {
+            this.pList.innerHTML = '';
+            items.forEach((val: IPerson): void => {
+                var nodeTr = document.createElement("TR");
+                this.appendTd<string>(nodeTr, val.name);
+                this.appendTd(nodeTr, val.age);
+                this.pList.appendChild(nodeTr);
+            });
+        }
+    }
+}
+
+import DataProvider = DataAccess.DataProvider;
 
 window.onload = () => {
-    
-    var dataProvider = new dataEx.DataProvider();
-    data = dataProvider.getPersonData();
-    viewedData = data;
-    showItems(data);
+    var dataProvider = new DataProvider();
+    var data = dataProvider.getPersonData();
+    var vm = new MainModule.MainViewModel(data);
+    var pList = document.getElementById('person-table').getElementsByTagName('tbody')[0];
+    var binder = new MainModule.Binder(pList);
+    binder.showItems(vm.visibleItems);
     document.getElementById('filter-button').onclick = () => {
-        var filterStr = document.getElementById('filter-input').nodeValue; //!!!! TS vcalue -> nodeValue
-        filter(filterStr);
+        var filterStr = (<HTMLInputElement>document.getElementById('filter-input')).value; //!!!! TS vcalue -> nodeValue
+        vm.filter(filterStr);
+        binder.showItems(vm.visibleItems);
     };
     document.getElementById('full-name-head').onclick = () => {
-        resortBy(SortDirection.name);
+        vm.resortBy(MainModule.SortBy.name);
+        binder.showItems(vm.visibleItems);
     };
     document.getElementById('age-head').onclick = () => {
-        resortBy(SortDirection.age);
+        vm.resortBy(MainModule.SortBy.age);
+        binder.showItems(vm.visibleItems);
     };
 };

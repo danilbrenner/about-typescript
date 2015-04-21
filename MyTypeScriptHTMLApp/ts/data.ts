@@ -1,6 +1,5 @@
 ﻿module DataAccess {
     import Person = Interfaces.IPerson;
-
     export module Interfaces {
         export interface IPerson {
             name: string;
