@@ -1,15 +1,37 @@
 ﻿
 var data;
-var viewedData;
+var displayedData;
 var sortBy = '';
 var sortDirection = '';
 
 function filter(filterStr) {
     filterStr = filterStr.toLowerCase();
-    viewedData = data.filter(function (val) {
+    displayedData = data.filter(function (val) {
         return val.name.toLowerCase().indexOf(filterStr) === 0;
     });
-    showItems(viewedData);
+    showItems(displayedData);
+};
+
+function setSorting(field) {
+    if (sortBy !== field) {
+        sortBy = field;
+        sortDirection = 'asc';
+    } else sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+}
+
+function sort(field) {
+    setSorting(field);
+    var func = function (a, b) {
+        if (a[field] > b[field]) {
+            return sortDirection === 'asc' ? 1 : -1;
+        }
+        if (a[field] < b[field]) {
+            return sortDirection === 'asc' ? -1 : 1;
+        }
+        return 0;
+    };
+    displayedData = displayedData.sort(func);
+    showItems(displayedData);
 };
 
 function appendTd(nodeTr, value) {
@@ -30,54 +52,18 @@ function showItems(items) {
     });
 }
 
-function sortByName(a, b) {
-    if (a.name > b.name) {
-        return sortDirection === 'asc' ? 1 : -1;
-    }
-    if (a.name < b.name) {
-        return sortDirection === 'asc' ? -1 : 1;
-    }
-    return 0;
-}
-
-function sortByAge(a, b) {
-    if (a.age > b.age) {
-        return sortDirection === 'asc' ? 1 : -1;
-    }
-    if (a.age < b.age) {
-        return sortDirection === 'asc' ? -1 : 1;
-    }
-    return 0;
-}
-
-function getSortFunction() {
-    if (sortBy === 'fullName') return sortByName;
-    if (sortBy === 'age') return sortByAge;
-}
-
-function resortBy(field) {
-    if (sortBy !== field) {
-        sortBy = field;
-        sortDirection = 'asc';
-    } else sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
-    var func = getSortFunction();
-    if (!func) return;
-    viewedData = viewedData.sort(func);
-    showItems(viewedData);
-};
-
 window.onload = function () {
     data = dataProvider.getPersonData();
-    viewedData = data;
+    displayedData = data;
     showItems(data);
     document.getElementById('filter-button').onclick = function () {
         var filterStr = document.getElementById('filter-input').value;
         filter(filterStr);
     };
     document.getElementById('full-name-head').onclick = function () {
-        resortBy('fullName');
+        sort('name');
     };
     document.getElementById('age-head').onclick = function () {
-        resortBy('age');
+        sort('age');
     };
 };
