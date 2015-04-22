@@ -22,9 +22,7 @@
     <Content Include="js\data.js" />
     <Content Include="js\index.html" />
     <Content Include="js\script.js" />
-    <TypeScriptCompile Include="ts\data.ts" />
     <Content Include="ts\index.html" />
-    <TypeScriptCompile Include="ts\script.ts" />
     <Content Include="web.config" />
   </ItemGroup>
   <ItemGroup>
