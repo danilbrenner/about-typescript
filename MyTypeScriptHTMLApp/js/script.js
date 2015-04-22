@@ -9,8 +9,8 @@ function filter(filterStr) {
     displayedData = data.filter(function (val) {
         return val.name.toLowerCase().indexOf(filterStr) === 0;
     });
-    showItems(displayedData);
-};
+    displyItems(displayedData);
+}
 
 function setSorting(field) {
     if (sortBy !== field) {
@@ -31,8 +31,8 @@ function sort(field) {
         return 0;
     };
     displayedData = displayedData.sort(func);
-    showItems(displayedData);
-};
+    displyItems(displayedData);
+}
 
 function appendTd(nodeTr, value) {
     var nodeTd = document.createElement("TD");
@@ -41,7 +41,7 @@ function appendTd(nodeTr, value) {
     nodeTr.appendChild(nodeTd);
 }
 
-function showItems(items) {
+function displyItems(items) {
     var pList = document.getElementById('person-table').getElementsByTagName('tbody')[0];
     pList.innerHTML = '';
     items.forEach(function (val) {
@@ -55,7 +55,7 @@ function showItems(items) {
 window.onload = function () {
     data = dataProvider.getPersonData();
     displayedData = data;
-    showItems(data);
+    displyItems(data);
     document.getElementById('filter-button').onclick = function () {
         var filterStr = document.getElementById('filter-input').value;
         filter(filterStr);
@@ -66,4 +66,4 @@ window.onload = function () {
     document.getElementById('age-head').onclick = function () {
         sort('age');
     };
-};
+}
